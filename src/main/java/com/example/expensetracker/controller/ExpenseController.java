@@ -7,8 +7,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/expenses")
 public class ExpenseController {
@@ -50,14 +59,24 @@ public class ExpenseController {
 
 
     @GetMapping("/filter")
-    public List<Expense> getFilteredExpenses(
+    public ResponseEntity<Map<String, Object>> getFilteredExpenses(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Double minAmount,
             @RequestParam(required = false) Double maxAmount,
             @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return expenseService.getFilteredExpenses(category, minAmount, maxAmount, startDate, endDate);
+        Page<Expense> expensePage = expenseService.getFilteredExpenses(category, minAmount, maxAmount, startDate, endDate, page, size);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("expenses", expensePage.getContent());
+        response.put("currentPage", expensePage.getNumber());
+        response.put("totalItems", expensePage.getTotalElements());
+        response.put("totalPages", expensePage.getTotalPages());
+
+        return ResponseEntity.ok(response);
     }
 
 }

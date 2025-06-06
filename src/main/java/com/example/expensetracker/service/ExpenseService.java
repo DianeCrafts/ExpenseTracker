@@ -3,7 +3,12 @@ package com.example.expensetracker.service;
 import com.example.expensetracker.model.Expense;
 import com.example.expensetracker.repository.ExpenseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,17 +51,12 @@ public class ExpenseService {
         expenseRepository.deleteAll();
     }
 
-    public List<Expense> getFilteredExpenses(String category, Double minAmount, Double maxAmount,
-                                             LocalDate startDate, LocalDate endDate) {
-        return expenseRepository.findAll().stream()
-                .filter(expense -> category == null ||
-                        (expense.getCategory() != null &&
-                                category.equalsIgnoreCase(expense.getCategory().getName())))
-                .filter(expense -> minAmount == null || expense.getAmount() >= minAmount)
-                .filter(expense -> maxAmount == null || expense.getAmount() <= maxAmount)
-                .filter(expense -> startDate == null || !expense.getDate().isBefore(startDate))
-                .filter(expense -> endDate == null || !expense.getDate().isAfter(endDate))
-                .collect(Collectors.toList());
+    public Page<Expense> getFilteredExpenses(String category, Double minAmount, Double maxAmount,
+                                             LocalDate startDate, LocalDate endDate,
+                                             int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return expenseRepository.findFiltered(category, minAmount, maxAmount, startDate, endDate, pageable);
     }
+
 
 }
