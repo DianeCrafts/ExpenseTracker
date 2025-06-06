@@ -1,0 +1,62 @@
+package com.example.expensetracker.service;
+
+import com.example.expensetracker.model.Expense;
+import com.example.expensetracker.repository.ExpenseRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class ExpenseService {
+    @Autowired
+    private ExpenseRepository expenseRepository;
+
+    public Expense createExpense(Expense expense) {
+        return expenseRepository.save(expense);
+    }
+
+    public List<Expense> getAllExpenses() {
+        return expenseRepository.findAll();
+    }
+
+    public Expense getExpenseById(Long id) {
+        return expenseRepository.findById(id).orElse(null);
+    }
+
+    public Expense updateExpense(Long id, Expense expense) {
+        Expense existing = getExpenseById(id);
+        if (existing != null) {
+            existing.setDescription(expense.getDescription());
+            existing.setAmount(expense.getAmount());
+            existing.setDate(expense.getDate());
+            return expenseRepository.save(existing);
+        }
+        return null;
+    }
+
+    public void deleteExpense(Long id) {
+        expenseRepository.deleteById(id);
+    }
+
+    //Diane
+    public void deleteAllExpenses() {
+        expenseRepository.deleteAll();
+    }
+
+    public List<Expense> getFilteredExpenses(String category, Double minAmount, Double maxAmount,
+                                             LocalDate startDate, LocalDate endDate) {
+        return expenseRepository.findAll().stream()
+                .filter(expense -> category == null ||
+                        (expense.getCategory() != null &&
+                                category.equalsIgnoreCase(expense.getCategory().getName())))
+                .filter(expense -> minAmount == null || expense.getAmount() >= minAmount)
+                .filter(expense -> maxAmount == null || expense.getAmount() <= maxAmount)
+                .filter(expense -> startDate == null || !expense.getDate().isBefore(startDate))
+                .filter(expense -> endDate == null || !expense.getDate().isAfter(endDate))
+                .collect(Collectors.toList());
+    }
+
+}
