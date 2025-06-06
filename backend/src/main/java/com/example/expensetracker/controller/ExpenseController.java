@@ -4,6 +4,7 @@ import com.example.expensetracker.model.Expense;
 import com.example.expensetracker.service.ExpenseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -85,10 +86,15 @@ public class ExpenseController {
     }
 
 
-    @PostMapping("/archiveOld")
-    public ResponseEntity<String> archiveOldExpenses() {
-        int count = expenseService.archiveExpensesOlderThan30Days();
-        return ResponseEntity.ok(count + " expenses archived.");
+//    @PostMapping("/archiveOld")
+//    public ResponseEntity<String> archiveOldExpenses() {
+//        int count = expenseService.archiveExpensesOlderThan30Days();
+//        return ResponseEntity.ok(count + " expenses archived.");
+//    }
+
+    @Scheduled(cron = "0 0 0 * * ?") // Every day at midnight
+    public void autoArchive() {
+        expenseService.archiveExpensesOlderThan30Days();
     }
 
 
