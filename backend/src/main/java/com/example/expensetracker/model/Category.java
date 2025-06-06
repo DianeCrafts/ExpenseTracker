@@ -16,7 +16,6 @@ public class Category {
     private String name;
 
     public Category() {
-        // Required by JPA and Jackson
     }
 
     public Category(String name) {

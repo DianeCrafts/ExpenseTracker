@@ -2,6 +2,10 @@ package com.example.expensetracker.model;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
+import java.time.LocalDate;
 
 @Entity
 public class Expense {
@@ -9,7 +13,12 @@ public class Expense {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String description;
+
+    @Min(value = 1, message = "Amount must be greater than 0")
     private Double amount;
+
+    @NotNull(message = "Date cannot be null")
+    @PastOrPresent(message = "Date cannot be in the future")
     private LocalDate date;
     @ManyToOne
     @JoinColumn(name = "category_id") // Foreign key column
