@@ -13,6 +13,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("/api/expenses")
 public class ExpenseController {

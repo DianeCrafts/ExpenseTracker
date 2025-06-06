@@ -33,7 +33,7 @@ export default {
         this.$router.push('/');
         return;
       }
-      axios.get('http://localhost:8080/api/expenses', {
+      axios.get('http://localhost:8081/api/expenses', {
         headers: { 'Authorization': `Basic ${auth}` }
       })
       .then(response => {
