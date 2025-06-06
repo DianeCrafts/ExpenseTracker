@@ -4,6 +4,7 @@ import com.example.expensetracker.model.Expense;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,5 +30,9 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     List<Expense> findByIsDeletedFalse();
     List<Expense> findByIsDeletedTrue();
+
+    @Modifying
+    @Query("UPDATE Expense e SET e.isDeleted = true WHERE e.date < :cutoffDate AND e.isDeleted = false")
+    int archiveOldExpenses(@Param("cutoffDate") LocalDate cutoffDate);
 
 }

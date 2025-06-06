@@ -84,4 +84,12 @@ public class ExpenseController {
         return ResponseEntity.ok(response);
     }
 
+
+    @PostMapping("/archiveOld")
+    public ResponseEntity<String> archiveOldExpenses() {
+        int count = expenseService.archiveExpensesOlderThan30Days();
+        return ResponseEntity.ok(count + " expenses archived.");
+    }
+
+
 }

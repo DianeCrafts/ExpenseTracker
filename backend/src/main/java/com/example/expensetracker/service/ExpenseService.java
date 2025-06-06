@@ -7,12 +7,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import java.time.LocalDate;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 public class ExpenseService {
@@ -69,6 +67,12 @@ public class ExpenseService {
                                              int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return expenseRepository.findFiltered(category, minAmount, maxAmount, startDate, endDate, pageable);
+    }
+
+    @Transactional
+    public int archiveExpensesOlderThan30Days() {
+        LocalDate cutoffDate = LocalDate.now().minusDays(30);
+        return expenseRepository.archiveOldExpenses(cutoffDate);
     }
 
 
