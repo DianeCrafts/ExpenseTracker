@@ -23,6 +23,8 @@ public class Expense {
     @ManyToOne
     @JoinColumn(name = "category_id") // Foreign key column
     private Category category;
+
+    private boolean isDeleted = false;
     // Constructors
     public Expense() {}
 
@@ -48,4 +50,10 @@ public class Expense {
     // And include in constructor, getter, and setter
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+    public void setDeleted(boolean isDeleted){
+        this.isDeleted = isDeleted;
+    }
+    public boolean isDeleted() {
+        return isDeleted;
+    }
 }

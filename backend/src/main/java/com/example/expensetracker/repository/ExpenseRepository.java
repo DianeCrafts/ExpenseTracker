@@ -9,10 +9,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     @Query("SELECT e FROM Expense e WHERE "
+            + "e.isDeleted = false AND "
             + "(:category IS NULL OR e.category.name = :category) AND "
             + "(:minAmount IS NULL OR e.amount >= :minAmount) AND "
             + "(:maxAmount IS NULL OR e.amount <= :maxAmount) AND "
@@ -24,5 +26,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
                                @Param("startDate") LocalDate startDate,
                                @Param("endDate") LocalDate endDate,
                                Pageable pageable);
+
+    List<Expense> findByIsDeletedFalse();
+    List<Expense> findByIsDeletedTrue();
 
 }

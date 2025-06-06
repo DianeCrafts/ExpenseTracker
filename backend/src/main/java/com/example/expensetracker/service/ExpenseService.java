@@ -24,7 +24,7 @@ public class ExpenseService {
     }
 
     public List<Expense> getAllExpenses() {
-        return expenseRepository.findAll();
+        return expenseRepository.findByIsDeletedFalse();
     }
 
     public Expense getExpenseById(Long id) {
@@ -44,6 +44,19 @@ public class ExpenseService {
 
     public void deleteExpense(Long id) {
         expenseRepository.deleteById(id);
+    }
+
+    //Diane
+    public Expense softDeleteExpense(Long id){
+        Expense expense = expenseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Expense not found"));
+
+        expense.setDeleted(true);
+        return expenseRepository.save(expense);
+    }
+
+    public List<Expense> getArchivedExpenses(){
+        return expenseRepository.findByIsDeletedTrue();
     }
 
     //Diane

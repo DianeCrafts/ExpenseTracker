@@ -41,14 +41,25 @@ public class ExpenseController {
     @DeleteMapping("/{id}")
     public void deleteExpense(@PathVariable Long id) {
         expenseService.deleteExpense(id);
+
+    }
+
+    @DeleteMapping("/softDelete/{id}")
+    public void softDeleteExpense(@PathVariable Long id) {
+        expenseService.softDeleteExpense(id);
     }
 
 
     //Diane
-    @DeleteMapping
+    @DeleteMapping()
     public ResponseEntity<Void> deleteAllExpenses() {
         expenseService.deleteAllExpenses();
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/archived")
+    public List<Expense> getAllArchivedExpenses(){
+        return expenseService.getArchivedExpenses();
     }
 
     //Diane
