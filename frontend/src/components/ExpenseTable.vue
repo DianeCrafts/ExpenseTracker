@@ -1,4 +1,4 @@
-<!-- components/ExpenseTable.vue -->
+
 <template>
   <div>
     <!-- Header Row with Filters -->
@@ -42,7 +42,7 @@
     <div>{{ expense.category?.name || '—' }}</div> <!-- Display category name or dash if null -->
     <div class="actions-column" v-if="currentTab == 'expenses'">
       <button @click="$emit('delete', expense.id)" class="icon-action" title="Delete">
-        <i class="fas fa-trash-alt"></i>
+        <i class="fas fa-archive"></i>
       </button>
       <button @click="$emit('edit', expense.id)" class="icon-action" title="Edit">
         <i class="fas fa-edit"></i>

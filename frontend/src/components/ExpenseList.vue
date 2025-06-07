@@ -193,7 +193,7 @@ export default {
     },
     logout() {
       localStorage.removeItem('auth');
-      this.$router.push('/login');
+      this.$router.push('/');
     },
     switchTab(tabName) {
       this.currentTab = tabName;

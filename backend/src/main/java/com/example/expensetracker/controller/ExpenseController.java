@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import java.util.Map;
 
@@ -141,8 +140,6 @@ public class ExpenseController {
         return ResponseEntity.ok(response);
     }
 
-
-
 //    @PostMapping("/archiveOld")
 //    public ResponseEntity<String> archiveOldExpenses() {
 //        int count = expenseService.archiveExpensesOlderThan30Days();
@@ -153,6 +150,4 @@ public class ExpenseController {
     public void autoArchive() {
         expenseService.archiveExpensesOlderThan30Days();
     }
-
-
 }
