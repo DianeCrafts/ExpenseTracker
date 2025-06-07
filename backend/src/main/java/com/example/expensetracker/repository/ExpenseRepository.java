@@ -16,17 +16,21 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     @Query("SELECT e FROM Expense e WHERE "
             + "e.isDeleted = false AND "
-            + "(:category IS NULL OR e.category.name = :category) AND "
+            + "(:description IS NULL OR LOWER(e.description) LIKE LOWER(CONCAT(:description, '%'))) AND "
+            + "(:category IS NULL OR LOWER(e.category.name) LIKE LOWER(CONCAT(:category, '%'))) AND "
             + "(:minAmount IS NULL OR e.amount >= :minAmount) AND "
             + "(:maxAmount IS NULL OR e.amount <= :maxAmount) AND "
             + "(:startDate IS NULL OR e.date >= :startDate) AND "
             + "(:endDate IS NULL OR e.date <= :endDate)")
-    Page<Expense> findFiltered(@Param("category") String category,
+    Page<Expense> findFiltered(@Param("description") String description,
+                               @Param("category") String category,
                                @Param("minAmount") Double minAmount,
                                @Param("maxAmount") Double maxAmount,
                                @Param("startDate") LocalDate startDate,
                                @Param("endDate") LocalDate endDate,
                                Pageable pageable);
+
+
 
     Page<Expense> findByIsDeletedFalse(Pageable pageable);
     Page<Expense> findByIsDeletedTrue(Pageable pageable);

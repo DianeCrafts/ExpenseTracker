@@ -68,11 +68,11 @@ public class ExpenseService {
         expenseRepository.deleteAll();
     }
 
-    public Page<Expense> getFilteredExpenses(String category, Double minAmount, Double maxAmount,
-                                             LocalDate startDate, LocalDate endDate,
+    public Page<Expense> getFilteredExpenses(String description, String category, Double minAmount,
+                                             Double maxAmount, LocalDate startDate, LocalDate endDate,
                                              int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return expenseRepository.findFiltered(category, minAmount, maxAmount, startDate, endDate, pageable);
+        return expenseRepository.findFiltered(description, category, minAmount, maxAmount, startDate, endDate, pageable);
     }
 
     @Transactional

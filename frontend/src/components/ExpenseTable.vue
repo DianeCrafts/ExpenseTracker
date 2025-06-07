@@ -2,42 +2,54 @@
 <template>
   <div>
     <!-- Header Row with Filters -->
-    <div class="grid-row header">
-      <div class="header-cell">
-        <div class="label">Description</div>
-        <input type="text" v-model="filters.description" placeholder="Filter" />
-      </div>
-      <div class="header-cell">
-        <div class="label">Amount</div>
-        <input type="text" v-model="filters.amount" placeholder="Filter" />
-      </div>
-      <div class="header-cell">
-        <div class="label">Date</div>
-        <div class="date-filter">
-          <input type="date" v-model="filters.startDate" />
-          <span>to</span>
-          <input type="date" v-model="filters.endDate" />
-        </div>
-      </div>
-      <div class="header-cell actions-column" v-if="currentTab == 'expenses'">
-        <div class="label">Actions</div>
+  <div class="grid-row header">
+    <div class="header-cell">
+      <div class="label">Description</div>
+      <input type="text" v-model="filters.description" placeholder="Filter" />
+    </div>
+
+    <div class="header-cell">
+      <div class="label">Amount</div>
+      <!-- Min and Max inputs for amount range -->
+      <input type="number" v-model.number="filters.minAmount" placeholder="Min" />
+      <input type="number" v-model.number="filters.maxAmount" placeholder="Max" />
+    </div>
+
+    <div class="header-cell">
+      <div class="label">Date</div>
+      <div class="date-filter">
+        <input type="date" v-model="filters.startDate" />
+        <span>to</span>
+        <input type="date" v-model="filters.endDate" />
       </div>
     </div>
 
-    <!-- Data Rows -->
-    <div class="grid-row" v-for="expense in expenses" :key="expense.id">
-      <div>{{ expense.description }}</div>
-      <div>{{ expense.amount }}</div>
-      <div>{{ expense.date }}</div>
-      <div class="actions-column" v-if="currentTab == 'expenses'">
-        <button @click="$emit('delete', expense.id)" class="icon-action" title="Delete">
-          <i class="fas fa-trash-alt"></i>
-        </button>
-        <button @click="$emit('edit', expense.id)" class="icon-action" title="Edit">
-          <i class="fas fa-edit"></i>
-        </button>
-      </div>
+    <div class="header-cell">
+      <div class="label">Category</div>
+      <input type="text" v-model="filters.category" placeholder="Filter" />
     </div>
+
+    <div class="header-cell actions-column" v-if="currentTab == 'expenses'">
+      <div class="label">Actions</div>
+    </div>
+  </div>
+
+  <!-- Data Rows -->
+  <div class="grid-row" v-for="expense in expenses" :key="expense.id">
+    <div>{{ expense.description }}</div>
+    <div>{{ expense.amount }}</div>
+    <div>{{ expense.date }}</div>
+    <div>{{ expense.category?.name || '—' }}</div> <!-- Display category name or dash if null -->
+    <div class="actions-column" v-if="currentTab == 'expenses'">
+      <button @click="$emit('delete', expense.id)" class="icon-action" title="Delete">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+      <button @click="$emit('edit', expense.id)" class="icon-action" title="Edit">
+        <i class="fas fa-edit"></i>
+      </button>
+    </div>
+  </div>
+
 
     <!-- Pagination -->
     <div class="pagination-wrapper">
@@ -82,13 +94,14 @@ export default {
     
   },
   data() {
-    return {
-      
+    return {     
       filters: {
         description: '',
-        amount: '',
+        minAmount: '',
+        maxAmount: '',
         startDate: '',
         endDate: '',
+        category: ''
       },
       localPageSize: this.pageSize,
     };
@@ -115,13 +128,27 @@ export default {
 
       return pages;
     }
+  },
+  methods: {
+    emitFilterChange() {
+      this.$emit('filter-change', { ...this.filters });
+    }
+  },
+  watch: {
+    filters: {
+      handler: 'emitFilterChange',
+      deep: true
+    },
+    localPageSize(newVal) {
+      this.$emit('change-page-size', newVal);
+    }
   }
 };
 </script>
 <style scoped>
 .grid-row {
   display: grid;
-  grid-template-columns: 3fr 1fr 3fr 80px;
+  grid-template-columns: 3fr 1fr 3fr 1fr 80px;
   align-items: center;
   border-bottom: 1px solid #ddd;
   background: #fff;
@@ -129,8 +156,8 @@ export default {
 }
 
 .grid-row > div {
-  border-left: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 8px;
+  /* border-left: 1px solid rgba(0, 0, 0, 0.1); */
+  padding: 10px;
 }
 
 .grid-row > div:first-child {

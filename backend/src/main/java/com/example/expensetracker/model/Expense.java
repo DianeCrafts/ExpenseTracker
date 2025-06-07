@@ -20,6 +20,7 @@ public class Expense {
     @NotNull(message = "Date cannot be null")
     @PastOrPresent(message = "Date cannot be in the future")
     private LocalDate date;
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "category_id") // Foreign key column
     private Category category;

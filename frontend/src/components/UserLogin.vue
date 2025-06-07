@@ -46,7 +46,6 @@ export default {
         });
         console.log(response)
 
-        // If success, store and redirect
         localStorage.setItem('auth', credentials);
         this.$router.push('/expenses');
         

@@ -1,9 +1,12 @@
 package com.example.expensetracker.controller;
 
+import com.example.expensetracker.model.Category;
 import com.example.expensetracker.model.Expense;
+import com.example.expensetracker.service.CategoryService;
 import com.example.expensetracker.service.ExpenseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +23,8 @@ import java.util.Map;
 public class ExpenseController {
     @Autowired
     private ExpenseService expenseService;
+    @Autowired
+    private CategoryService categoryService;
 
 //    @GetMapping
 //    public List<Expense> getAllExpenses() {
@@ -48,10 +53,25 @@ public class ExpenseController {
         return expenseService.getExpenseById(id);
     }
 
+//    @PostMapping
+//    public Expense createExpense(@Valid @RequestBody Expense expense) {
+//        return expenseService.createExpense(expense);
+//    }
+
     @PostMapping
-    public Expense createExpense(@Valid @RequestBody Expense expense) {
+    public Expense createExpense(@Valid @RequestBody Expense expenseDto) {
+        Category category = categoryService.getCategoryById(expenseDto.getCategory().getId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        Expense expense = new Expense(
+                expenseDto.getDescription(),
+                expenseDto.getAmount(),
+                expenseDto.getDate(),
+                category
+        );
         return expenseService.createExpense(expense);
     }
+
 
     @PutMapping("/{id}")
     public Expense updateExpense(@PathVariable Long id, @Valid @RequestBody Expense expense) {
@@ -99,15 +119,18 @@ public class ExpenseController {
     //Diane
     @GetMapping("/filter")
     public ResponseEntity<Map<String, Object>> getFilteredExpenses(
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String description,
             @RequestParam(required = false) Double minAmount,
             @RequestParam(required = false) Double maxAmount,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<Expense> expensePage = expenseService.getFilteredExpenses(category, minAmount, maxAmount, startDate, endDate, page, size);
+        Page<Expense> expensePage = expenseService.getFilteredExpenses(
+                description, category, minAmount, maxAmount, startDate, endDate, page, size
+        );
 
         Map<String, Object> response = new HashMap<>();
         response.put("expenses", expensePage.getContent());
@@ -117,6 +140,7 @@ public class ExpenseController {
 
         return ResponseEntity.ok(response);
     }
+
 
 
 //    @PostMapping("/archiveOld")

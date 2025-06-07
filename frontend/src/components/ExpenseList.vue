@@ -1,5 +1,8 @@
 <template>
+  
   <div class="expenses-container">
+    <ErrorHandler v-if="errorFlag" :message="errorMessage" @dismiss="errorFlag = false" />
+
     <div>
     <!-- Tab Buttons -->
     <div class="titles-wrapper">
@@ -33,18 +36,27 @@
       @change-page-size="changePageSize"
       @delete="deleteRecord"
       @edit="updateRecord"
+      @filter-change="handleFilterChange"
     />
-
+  
+    
     <div class="buttons-row">
+      <button @click="toggleCategoryForm">Add New Category</button>
       <button @click="toggleForm">Add New Expense</button>
     </div>
 
+    <transition name="fade">
+      <div v-if="showCatergoryForm">
+        <CategoryManager></CategoryManager>
+      </div>
+    </transition>
     <transition name="fade">
       <div v-if="showForm">
         <expense-form
           :expense="currentEditExpense"
           @expense-added="handleAdded"
           @expense-updated="handleUpdated"
+          @error="handleError"
         />
       </div>
     </transition>
@@ -56,9 +68,11 @@
 <script>
 import ExpenseForm from './ExpenseForm.vue';
 import ExpenseTable from './ExpenseTable.vue'
+import CategoryManager from './CategoryManager.vue'
+import ErrorHandler from './ErrorHandler.vue'
 
 export default {
-  components: { ExpenseForm, ExpenseTable },
+  components: { ExpenseForm, ExpenseTable, CategoryManager, ErrorHandler },
   data() {
     return {
       currentTab: 'expenses',
@@ -66,8 +80,12 @@ export default {
       currentPage: 0,
       totalPages: 0,
       pageSize: 10,
+      showCatergoryForm: false,
       showForm: false,
       currentEditExpense: null,
+      activeFilters: null,
+      errorFlag: false,
+      errorMessage: '',
     };
   },
   methods: {
@@ -78,13 +96,44 @@ export default {
         size: this.pageSize
       });
 
-      // Choose the endpoint based on currentTab
+      // If filters are active
+      if (this.activeFilters) {
+        const f = this.activeFilters;
+
+        if (f.description) params.append('description', f.description);
+        if (f.category) params.append('category', f.category);
+        if (f.minAmount !== null && f.minAmount !== '') params.append('minAmount', f.minAmount);
+        if (f.maxAmount !== null && f.maxAmount !== '') params.append('maxAmount', f.maxAmount);
+        if (f.startDate) params.append('startDate', f.startDate);
+        if (f.endDate) params.append('endDate', f.endDate);
+
+        const url = `http://localhost:8081/api/expenses/filter?${params.toString()}`;
+        console.log("Fetching with filters:", url);
+
+        fetch(url, {
+          headers: { Authorization: `Basic ${auth}` }
+        })
+          .then(res => res.json())
+          .then(data => {
+            this.expenses = data.expenses;
+            this.totalPages = data.totalPages;
+            this.currentPage = data.currentPage;
+          })
+          .catch(error => {
+            console.error(error);
+            this.errorFlag = true;
+            this.errorMessage = 'An error occurred while fetching expenses.';
+          });
+        return;
+      }
+
+      // Default behavior (no filters)
       const endpoint =
         this.currentTab === 'archive'
           ? 'http://localhost:8081/api/expenses/archived'
           : 'http://localhost:8081/api/expenses';
 
-      fetch(`${endpoint}?${params}`, {
+      fetch(`${endpoint}?${params.toString()}`, {
         headers: { Authorization: `Basic ${auth}` }
       })
         .then(res => res.json())
@@ -93,9 +142,19 @@ export default {
           this.totalPages = data.totalPages;
           this.currentPage = data.currentPage;
         })
-        .catch(console.error);
+        .catch(error => {
+          console.error(error);
+          this.errorFlag = true;
+          this.errorMessage = 'An error occurred while fetching expenses.';
+        });
     },
 
+    handleFilterChange(filters) {
+      
+      this.activeFilters = filters;
+      this.currentPage = 0;
+      this.fetchExpenses();
+    },
 
 
     changePage(index) {
@@ -106,6 +165,9 @@ export default {
       this.pageSize = newSize;
       this.currentPage = 0;
       this.fetchExpenses();
+    },
+    toggleCategoryForm(){
+      this.showCatergoryForm = !this.showCatergoryForm;
     },
     toggleForm() {
       this.showForm = !this.showForm;
@@ -137,6 +199,10 @@ export default {
       this.currentTab = tabName;
       this.fetchExpenses();
     },
+    handleError(message) {
+      this.errorMessage = message;
+      this.errorFlag = true;
+    }
   },
   mounted() {
     this.fetchExpenses();
@@ -188,14 +254,16 @@ export default {
 
 
 .buttons-row {
-  display: flex;
+  display: inline-flex;
   margin: 16px 0;
 }
+
 
 button {
   background-color: #555;
   color: white;
   padding: 10px 18px;
+  margin-right: 5px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
