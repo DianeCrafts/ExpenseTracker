@@ -53,6 +53,8 @@ public class ExpenseService {
         return expenseRepository.save(expense);
     }
 
+
+
     public List<Expense> getArchivedExpenses(){
         return expenseRepository.findByIsDeletedTrue();
     }

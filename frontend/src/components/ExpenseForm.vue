@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="form-container">
     <h2>Add Expense</h2>
     <form @submit.prevent="addExpense">
       <input v-model="description" placeholder="Description" required />
@@ -24,7 +24,7 @@ export default {
   methods: {
     addExpense() {
       const auth = localStorage.getItem('auth');
-      axios.post('http://localhost:8080/api/expenses', {
+      axios.post('http://localhost:8081/api/expenses', {
         description: this.description,
         amount: this.amount,
         date: this.date
@@ -42,3 +42,37 @@ export default {
   }
 };
 </script>
+
+
+<style scoped>
+.form-container {
+  background: #FFFFFF;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+input {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid #DDD;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+button {
+  background-color: #2A4759;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #1c3340;
+}
+</style>
