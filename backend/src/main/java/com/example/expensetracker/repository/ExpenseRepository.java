@@ -28,8 +28,9 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
                                @Param("endDate") LocalDate endDate,
                                Pageable pageable);
 
-    List<Expense> findByIsDeletedFalse();
-    List<Expense> findByIsDeletedTrue();
+    Page<Expense> findByIsDeletedFalse(Pageable pageable);
+    Page<Expense> findByIsDeletedTrue(Pageable pageable);
+
 
     @Modifying
     @Query("UPDATE Expense e SET e.isDeleted = true WHERE e.date < :cutoffDate AND e.isDeleted = false")

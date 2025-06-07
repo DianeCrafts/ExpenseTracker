@@ -1,11 +1,11 @@
 <template>
   <div class="form-container">
-    <h2>Add Expense</h2>
-    <form @submit.prevent="addExpense">
+    <h2>{{ expense ? 'Edit Expense' : 'Add Expense' }}</h2>
+    <form @submit.prevent="handleSubmit">
       <input v-model="description" placeholder="Description" required />
       <input v-model="amount" type="number" placeholder="Amount" required />
       <input v-model="date" type="date" required />
-      <button type="submit">Add</button>
+      <button type="submit">{{ expense ? 'Update' : 'Add' }}</button>
     </form>
   </div>
 </template>
@@ -14,6 +14,12 @@
 import axios from 'axios';
 
 export default {
+  props: {
+    expense: {
+      type: Object,
+      default: null
+    }
+  },
   data() {
     return {
       description: '',
@@ -21,28 +27,57 @@ export default {
       date: ''
     };
   },
+  watch: {
+    expense: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          this.description = newVal.description;
+          this.amount = newVal.amount;
+          this.date = newVal.date;
+        } else {
+          this.description = '';
+          this.amount = 0;
+          this.date = '';
+        }
+      }
+    }
+  },
   methods: {
-    addExpense() {
+    handleSubmit() {
       const auth = localStorage.getItem('auth');
-      axios.post('http://localhost:8081/api/expenses', {
+      const payload = {
         description: this.description,
         amount: this.amount,
         date: this.date
-      }, {
-        headers: { 'Authorization': `Basic ${auth}` }
-      })
-      .then(() => {
-        this.$emit('expense-added');
-        this.description = '';
-        this.amount = 0;
-        this.date = '';
-      })
-      .catch(error => console.error(error));
+      };
+
+      if (this.expense) {
+        // Update existing
+        axios.put(`http://localhost:8081/api/expenses/${this.expense.id}`, payload, {
+          headers: { 'Authorization': `Basic ${auth}` }
+        })
+        .then(() => {
+          this.$emit('expense-updated');
+        })
+        .catch(error => console.error(error));
+      } else {
+        // Add new
+        axios.post('http://localhost:8081/api/expenses', payload, {
+          headers: { 'Authorization': `Basic ${auth}` }
+        })
+        .then(() => {
+          this.$emit('expense-added');
+          this.description = '';
+          this.amount = 0;
+          this.date = '';
+        })
+        .catch(error => console.error(error));
+      }
     }
   }
 };
 </script>
-
 
 <style scoped>
 .form-container {
@@ -64,7 +99,7 @@ input {
 }
 
 button {
-  background-color: #2A4759;
+  background-color: #555;
   color: white;
   padding: 10px 16px;
   border: none;
@@ -73,6 +108,6 @@ button {
 }
 
 button:hover {
-  background-color: #1c3340;
+  background-color: #333;
 }
 </style>

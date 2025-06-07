@@ -4,6 +4,7 @@ import com.example.expensetracker.model.Expense;
 import com.example.expensetracker.repository.ExpenseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,10 +22,13 @@ public class ExpenseService {
         return expenseRepository.save(expense);
     }
 
-    public List<Expense> getAllExpenses() {
-        return expenseRepository.findByIsDeletedFalse();
-    }
+//    public List<Expense> getAllExpenses() {
+//        return expenseRepository.findByIsDeletedFalse();
+//    }
 
+    public Page<Expense> getAllExpensesPaginated(Pageable pageable) {
+        return expenseRepository.findByIsDeletedFalse(pageable);
+    }
     public Expense getExpenseById(Long id) {
         return expenseRepository.findById(id).orElse(null);
     }
@@ -55,8 +59,8 @@ public class ExpenseService {
 
 
 
-    public List<Expense> getArchivedExpenses(){
-        return expenseRepository.findByIsDeletedTrue();
+    public Page<Expense> getArchivedExpenses(Pageable pageable){
+        return expenseRepository.findByIsDeletedTrue(pageable);
     }
 
     //Diane

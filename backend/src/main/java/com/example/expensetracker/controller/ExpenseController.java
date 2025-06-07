@@ -3,6 +3,7 @@ package com.example.expensetracker.controller;
 import com.example.expensetracker.model.Expense;
 import com.example.expensetracker.service.ExpenseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +21,26 @@ public class ExpenseController {
     @Autowired
     private ExpenseService expenseService;
 
+//    @GetMapping
+//    public List<Expense> getAllExpenses() {
+//        return expenseService.getAllExpenses();
+//    }
+
+
     @GetMapping
-    public List<Expense> getAllExpenses() {
-        return expenseService.getAllExpenses();
+    public ResponseEntity<Map<String, Object>> getAllExpensesPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<Expense> expensePage = expenseService.getAllExpensesPaginated(PageRequest.of(page, size));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("expenses", expensePage.getContent());
+        response.put("currentPage", expensePage.getNumber());
+        response.put("totalItems", expensePage.getTotalElements());
+        response.put("totalPages", expensePage.getTotalPages());
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -62,9 +80,21 @@ public class ExpenseController {
     }
 
     @GetMapping("/archived")
-    public List<Expense> getAllArchivedExpenses(){
-        return expenseService.getArchivedExpenses();
+    public ResponseEntity<Map<String, Object>> getArchivedExpensesPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<Expense> expensePage = expenseService.getArchivedExpenses(PageRequest.of(page, size));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("expenses", expensePage.getContent());
+        response.put("currentPage", expensePage.getNumber());
+        response.put("totalItems", expensePage.getTotalElements());
+        response.put("totalPages", expensePage.getTotalPages());
+
+        return ResponseEntity.ok(response);
     }
+
 
     //Diane
     @GetMapping("/filter")
