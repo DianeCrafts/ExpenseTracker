@@ -62,6 +62,14 @@ public class ExpenseService {
     public Page<Expense> getArchivedExpenses(Pageable pageable){
         return expenseRepository.findByIsDeletedTrue(pageable);
     }
+    public Page<Expense> getFilteredArchivedExpenses(String description, String category, Double minAmount,
+                                                     Double maxAmount, LocalDate startDate, LocalDate endDate,
+                                                     int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return expenseRepository.findFilteredIsDeletedTrue(description, category, minAmount, maxAmount, startDate, endDate, pageable);
+    }
+
+
 
     //Diane
     public void deleteAllExpenses() {

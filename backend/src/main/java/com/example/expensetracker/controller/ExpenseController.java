@@ -115,6 +115,29 @@ public class ExpenseController {
     }
 
 
+    @GetMapping("/filter/archived")
+    public ResponseEntity<Map<String, Object>> getFilteredArchivedExpensesPaginated(
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) Double minAmount,
+            @RequestParam(required = false) Double maxAmount,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<Expense> expensePage = expenseService.getFilteredArchivedExpenses(description, category, minAmount, maxAmount, startDate, endDate, page, size);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("expenses", expensePage.getContent());
+        response.put("currentPage", expensePage.getNumber());
+        response.put("totalItems", expensePage.getTotalElements());
+        response.put("totalPages", expensePage.getTotalPages());
+
+        return ResponseEntity.ok(response);
+    }
+
+
     //Diane
     @GetMapping("/filter")
     public ResponseEntity<Map<String, Object>> getFilteredExpenses(
