@@ -58,7 +58,7 @@ export default {
 </script>
 <style scoped>
 .category-manager {
-  max-width: 900px;
+  max-width: 60vw;
   margin: 20px auto;
   background: #ffffff;
   padding: 20px;

@@ -115,7 +115,7 @@ export default {
 
 <style scoped>
 .form-container {
-  max-width: 900px;
+  max-width: 60vw;
   margin: 20px auto;
   background: #ffffff;
   padding: 20px;

@@ -1,10 +1,25 @@
+/**
+ * ExpensesView.vue
+ * 
+ * This component manages the display and interaction for the Expenses and Archive views.
+ * It handles tab switching, expense listing, filtering, pagination, and form toggling.
+ * 
+ * Subcomponents used:
+ * - ExpenseForm: For adding/editing an expense
+ * - ExpenseTable: To display and interact with expense records
+ * - CategoryManager: For managing categories
+ * - ErrorHandler: For showing error messages
+ */
+
+
 <template>
   
   <div class="expenses-container">
-    <ErrorHandler v-if="errorFlag" :message="errorMessage" @dismiss="errorFlag = false" />
+    <!-- Error Display -->
+    <Error-handler v-if="errorFlag" :message="errorMessage" @dismiss="errorFlag = false" />
 
+    <!-- Tabs for switching views -->
     <div>
-    <!-- Tab Buttons -->
     <div class="titles-wrapper">
       <button
         class="tab-button"
@@ -25,8 +40,8 @@
    
   </div>
 
-    <!-- Use your reusable component -->
-    <ExpenseTable
+    <!-- Table of expenses -->
+    <Expense-table
       :currentTab="currentTab"
       :expenses="expenses"
       :currentPage="currentPage"
@@ -39,19 +54,19 @@
       @filter-change="handleFilterChange"
     />
   
-    
+    <!-- Buttons to open forms -->
     <div class="buttons-row">
       <button @click="toggleCategoryForm">Add New Category</button>
-      <button @click="toggleForm">Add New Expense</button>
+      <button @click="toggleExpenseForm">Add New Expense</button>
     </div>
-
+    <!-- Conditional Forms for category and expense -->
     <transition name="fade">
       <div v-if="showCatergoryForm">
-        <CategoryManager></CategoryManager>
+        <Category-manager></Category-manager>
       </div>
     </transition>
     <transition name="fade">
-      <div v-if="showForm">
+      <div v-if="showExpenseForm">
         <expense-form
           :expense="currentEditExpense"
           @expense-added="handleAdded"
@@ -60,7 +75,7 @@
         />
       </div>
     </transition>
-
+    <!-- Logout button -->
     <button class="logout-button" @click="logout">Logout</button>
   </div>
 </template>
@@ -81,7 +96,7 @@ export default {
       totalPages: 0,
       pageSize: 10,
       showCatergoryForm: false,
-      showForm: false,
+      showExpenseForm: false,
       currentEditExpense: null,
       activeFilters: null,
       errorFlag: false,
@@ -95,21 +110,17 @@ export default {
         page: this.currentPage,
         size: this.pageSize
       });
-
-      // If filters are active
-      if (this.activeFilters) {
-        const f = this.activeFilters;
-
-        if (f.description) params.append('description', f.description);
-        if (f.category) params.append('category', f.category);
-        if (f.minAmount !== null && f.minAmount !== '') params.append('minAmount', f.minAmount);
-        if (f.maxAmount !== null && f.maxAmount !== '') params.append('maxAmount', f.maxAmount);
-        if (f.startDate) params.append('startDate', f.startDate);
-        if (f.endDate) params.append('endDate', f.endDate);
-
+      
+      const f = this.activeFilters;
+      if (f && f.category) params.append('category', f.category);
+        if (f && f.description) params.append('description', f.description);
+        if (f && f.minAmount !== null && f.minAmount !== '') params.append('minAmount', f.minAmount);
+        if (f && f.maxAmount !== null && f.maxAmount !== '') params.append('maxAmount', f.maxAmount);
+        if (f && f.startDate) params.append('startDate', f.startDate);
+        if (f && f.endDate) params.append('endDate', f.endDate);
+      if (this.currentTab === 'expenses'){
         const url = `http://localhost:8081/api/expenses/filter?${params.toString()}`;
-        console.log("Fetching with filters:", url);
-
+        console.log(url);
         fetch(url, {
           headers: { Authorization: `Basic ${auth}` }
         })
@@ -126,36 +137,32 @@ export default {
           });
         return;
       }
-
-      // Default behavior (no filters)
-      const endpoint =
-        this.currentTab === 'archive'
-          ? 'http://localhost:8081/api/expenses/archived'
-          : 'http://localhost:8081/api/expenses';
-
-      fetch(`${endpoint}?${params.toString()}`, {
-        headers: { Authorization: `Basic ${auth}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          this.expenses = data.expenses;
-          this.totalPages = data.totalPages;
-          this.currentPage = data.currentPage;
-        })
-        .catch(error => {
-          console.error(error);
-          this.errorFlag = true;
-          this.errorMessage = 'An error occurred while fetching expenses.';
-        });
+      else if (this.currentTab === 'archive') {
+        const url = `http://localhost:8081/api/expenses/filter/archived?${params.toString()}`;
+        fetch(url, {
+                headers: { Authorization: `Basic ${auth}` }
+              })
+                .then(res => res.json())
+                .then(data => {
+                  this.expenses = data.expenses;
+                  this.totalPages = data.totalPages;
+                  this.currentPage = data.currentPage;
+                })
+                .catch(error => {
+                  console.error(error);
+                  this.errorFlag = true;
+                  this.errorMessage = 'An error occurred while fetching expenses.';
+                });
+      }
     },
 
+    // Triggered when filters change (from child component)
     handleFilterChange(filters) {
       
       this.activeFilters = filters;
       this.currentPage = 0;
       this.fetchExpenses();
     },
-
 
     changePage(index) {
       this.currentPage = index;
@@ -166,20 +173,32 @@ export default {
       this.currentPage = 0;
       this.fetchExpenses();
     },
+
     toggleCategoryForm(){
+      if (!this.showCatergoryForm && this.showExpenseForm)
+        this.showExpenseForm = !this.showExpenseForm;
       this.showCatergoryForm = !this.showCatergoryForm;
     },
-    toggleForm() {
-      this.showForm = !this.showForm;
+    toggleExpenseForm() {
+      if (!this.showExpenseForm && this.showCatergoryForm)
+        this.showCatergoryForm = !this.showCatergoryForm;
+      this.showExpenseForm = !this.showExpenseForm;
     },
+
+    // Handler after a new expense is added
     handleAdded() {
       this.fetchExpenses();
-      this.showForm = false;
+      this.showExpenseForm = false;
     },
+
+    // Handler after an expense is updated
     handleUpdated() {
       this.fetchExpenses();
-      this.showForm = false;
+      this.showExpenseForm = false;
+      this.currentEditExpense = null;
     },
+
+    // Delete (soft) an expense by ID
     async deleteRecord(id) {
       await fetch(`http://localhost:8081/api/expenses/softDelete/${id}`, {
         method: 'DELETE',
@@ -187,18 +206,24 @@ export default {
       });
       this.fetchExpenses();
     },
+
+    // Prepare expense for editing
     updateRecord(id) {
       this.currentEditExpense = this.expenses.find(exp => exp.id === id);
-      this.showForm = true;
+      this.showExpenseForm = true;
     },
+
     logout() {
       localStorage.removeItem('auth');
       this.$router.push('/');
     },
+
+    // Switch between tabs (Expenses / Archive)
     switchTab(tabName) {
       this.currentTab = tabName;
       this.fetchExpenses();
     },
+
     handleError(message) {
       this.errorMessage = message;
       this.errorFlag = true;
@@ -211,7 +236,7 @@ export default {
 </script>
 <style scoped>
 .expenses-container {
-  max-width: 900px;
+  max-width: 60vw;
   margin: 40px auto;
   padding: 20px;
   background: #eeeeee;
